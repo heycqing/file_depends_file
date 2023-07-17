@@ -1,8 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const { parse } = require("@vue/compiler-sfc");
+const { processJsImports, getJsDependencies } = require("./jsDepende.js");
 
-function findVueFiles(dirPath, vueFiles = []) {
+function findFiles(dirPath, vueFiles = [], jsFiles = []) {
 	const files = fs.readdirSync(dirPath);
 
 	for (const file of files) {
@@ -10,13 +11,15 @@ function findVueFiles(dirPath, vueFiles = []) {
 		const stats = fs.statSync(filePath);
 
 		if (stats.isDirectory()) {
-			findVueFiles(filePath, vueFiles);
+			findFiles(filePath, vueFiles, jsFiles);
 		} else if (stats.isFile() && filePath.endsWith(".vue")) {
 			vueFiles.push(filePath);
+		} else if (stats.isFile() && filePath.endsWith(".js")) {
+			jsFiles.push(filePath);
 		}
 	}
 
-	return vueFiles;
+	return { vueFiles, jsFiles };
 }
 
 function getComponentImports(fileContent) {
@@ -41,70 +44,28 @@ function getConfigPaths() {
 	return config.paths || [];
 }
 
-function main() {
-	const configPaths = getConfigPaths();
-	let vueFiles = [];
-
-	for (const configPath of configPaths) {
-		if (fs.existsSync(configPath)) {
-			const stats = fs.statSync(configPath);
-
-			if (stats.isDirectory()) {
-				vueFiles = vueFiles.concat(findVueFiles(configPath));
-			} else if (stats.isFile() && configPath.endsWith(".vue")) {
-				vueFiles.push(configPath);
-			}
-		} else {
-			console.error(`Invalid path: ${configPath}`);
-		}
-	}
-
-	if (vueFiles.length === 0) {
-		console.error("No Vue files found");
-		process.exit(1);
-	}
-
+function processDependencies(files, getDependencies) {
 	let output = "";
 	const componentCounts = {};
 	const componentPaths = {};
 
-	for (const vueFile of vueFiles) {
-		const fileContent = fs.readFileSync(vueFile, "utf8");
-		const componentImports = getComponentImports(fileContent);
-		const excludedImports = [];
+	for (const file of files) {
+		const fileContent = fs.readFileSync(file, "utf8");
+		const dependencies = getDependencies(fileContent);
 
-		output += `${vueFile}:\n`;
+		output += `${file}:\n`;
 
-		if (componentImports.length > 0) {
-			componentImports.forEach((importStatement) => {
-				const [, componentName, componentPath] = importStatement.match(
-					/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/
-				);
+		for (const dependency of dependencies) {
+			const [, componentName, componentPath] = dependency.match(
+				/(?:import\s+(\w+)\s+from\s+|require\()['"]([^'"]+)['"]/
+			);
 
-				if (!componentCounts[componentName]) {
-					componentCounts[componentName] = 1;
-					componentPaths[componentName] = componentPath;
-				} else {
-					componentCounts[componentName]++;
-					excludedImports.push(importStatement);
-				}
-			});
-
-			if (excludedImports.length > 0) {
-				output += "  Excluded Components:\n";
-				excludedImports.forEach((importStatement) => {
-					const [, componentName, componentPath] = importStatement.match(
-						/import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/
-					);
-
-					output += `    ${importStatement.replace(
-						componentPath,
-						componentPath
-					)}\n`;
-				});
+			if (!componentCounts[componentName]) {
+				componentCounts[componentName] = 1;
+				componentPaths[componentName] = componentPath;
+			} else {
+				componentCounts[componentName]++;
 			}
-		} else {
-			output += "  No components imported in this file\n";
 		}
 
 		output += "\n";
@@ -141,8 +102,46 @@ function main() {
 		});
 	}
 
-	const outputPath = process.argv[2] || "output.yml";
-	fs.writeFileSync(outputPath, output);
+	return output;
+}
+
+function main() {
+	const configPaths = getConfigPaths();
+	let vueFiles = [];
+	let jsFiles = [];
+
+	for (const configPath of configPaths) {
+		if (fs.existsSync(configPath)) {
+			const stats = fs.statSync(configPath);
+
+			if (stats.isDirectory()) {
+				const { vueFiles: dirVueFiles, jsFiles: dirJsFiles } =
+					findFiles(configPath);
+				vueFiles = vueFiles.concat(dirVueFiles);
+				jsFiles = jsFiles.concat(dirJsFiles);
+			} else if (stats.isFile() && configPath.endsWith(".vue")) {
+				vueFiles.push(configPath);
+			} else if (stats.isFile() && configPath.endsWith(".js")) {
+				jsFiles.push(configPath);
+			}
+		} else {
+			console.error(`Invalid path: ${configPath}`);
+		}
+	}
+
+	if (vueFiles.length === 0 && jsFiles.length === 0) {
+		console.error("No Vue or JS files found");
+		process.exit(1);
+	}
+
+	const vueOutput = processDependencies(vueFiles, getComponentImports);
+	fs.writeFileSync("vue_output.yml", vueOutput);
+
+	const jsImportsOutput = processJsImports(
+		[...vueFiles, ...jsFiles],
+		getJsDependencies
+	);
+	fs.writeFileSync("js_imports_output.yml", jsImportsOutput);
 }
 
 main();
