@@ -1,0 +1,5 @@
+## 输出 
+文件夹: output/
+1. js_imports_output.yml 主要输出依赖的js文件
+
+2. vue_output.yml 主要输出依赖的vue文件
