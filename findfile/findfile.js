@@ -37,7 +37,7 @@ function getComponentImports(fileContent) {
 }
 
 function getConfigPaths() {
-	const configPath = path.join(__dirname, "config.js");
+	const configPath = path.join(__dirname, "../config/config.js");
 	const configContent = fs.readFileSync(configPath, "utf8");
 	const config = JSON.parse(configContent);
 
@@ -59,6 +59,8 @@ function processDependencies(files, getDependencies) {
 			const [, componentName, componentPath] = dependency.match(
 				/(?:import\s+(\w+)\s+from\s+|require\()['"]([^'"]+)['"]/
 			);
+
+			output += `  import '${dependency}'\n`;
 
 			if (!componentCounts[componentName]) {
 				componentCounts[componentName] = 1;
@@ -134,14 +136,28 @@ function main() {
 		process.exit(1);
 	}
 
-	const vueOutput = processDependencies(vueFiles, getComponentImports);
-	fs.writeFileSync("vue_output.yml", vueOutput);
+	// const vueOutput = processDependencies(vueFiles, getComponentImports);
+	// fs.writeFileSync("../output/vue_output.yml", vueOutput);
 
-	const jsImportsOutput = processJsImports(
-		[...vueFiles, ...jsFiles],
-		getJsDependencies
-	);
-	fs.writeFileSync("js_imports_output.yml", jsImportsOutput);
+	// const jsImportsOutput = processJsImports(
+	// 	[...vueFiles, ...jsFiles],
+	// 	getJsDependencies
+	// );
+	// fs.writeFileSync("../output/js_imports_output.yml", jsImportsOutput);
+
+	const outputFolderPath = path.join(__dirname, "../output");
+
+	const vueOutputPath = path.join(outputFolderPath, "vue_output.yml");
+	const vueOutput = processDependencies(vueFiles, getComponentImports);
+	fs.writeFileSync(vueOutputPath, vueOutput);
+
+	const jsImportsOutputPath = path.join(outputFolderPath, "js_imports_output.yml");
+	const jsImportsOutput = processJsImports([...vueFiles, ...jsFiles], getJsDependencies);
+	fs.writeFileSync(jsImportsOutputPath, jsImportsOutput);
+
 }
 
-main();
+
+module.exports = {
+	main
+};
