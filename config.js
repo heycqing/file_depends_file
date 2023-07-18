@@ -1,5 +1,5 @@
 {
   "paths": [
-    "/Users/cqing/testvue/src/App.vue"
+    "D://code//base//src//kyetree-prism//pages//data-view"
   ]
 }
