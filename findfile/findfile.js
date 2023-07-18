@@ -136,15 +136,6 @@ function main() {
 		process.exit(1);
 	}
 
-	// const vueOutput = processDependencies(vueFiles, getComponentImports);
-	// fs.writeFileSync("../output/vue_output.yml", vueOutput);
-
-	// const jsImportsOutput = processJsImports(
-	// 	[...vueFiles, ...jsFiles],
-	// 	getJsDependencies
-	// );
-	// fs.writeFileSync("../output/js_imports_output.yml", jsImportsOutput);
-
 	const outputFolderPath = path.join(__dirname, "../output");
 
 	const vueOutputPath = path.join(outputFolderPath, "vue_output.yml");
@@ -155,6 +146,10 @@ function main() {
 	const jsImportsOutput = processJsImports([...vueFiles, ...jsFiles], getJsDependencies);
 	fs.writeFileSync(jsImportsOutputPath, jsImportsOutput);
 
+	console.log('handle success 处理成功, 输出结果在 output 目录下: \n');
+	console.log('1. 主要输出依赖的js文件  ./output/js_imports_output.yml \n')
+	console.log('2. 主要输出依赖的vue文件 ./output/vue_output.yml \n')
+	console.log('3. js解析到其他内容无法解析的存放目录 ( 可忽略，不影响 ) ./error_log/error_log.yml \n')
 }
 
 

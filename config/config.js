@@ -1,5 +1,5 @@
 {
   "paths": [
-    "D://code//bigdata-prism//src//components"
+   "D://code//base//src//kyetree-prism//pages//data-view"
   ]
 }

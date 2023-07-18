@@ -1,6 +1,7 @@
 const acorn = require("acorn");
 const walk = require("acorn-walk");
 const fs = require("fs");
+const path = require("path");
 const { parse } = require("@vue/compiler-sfc");
 
 function getJsDependencies(fileContent) {
@@ -46,8 +47,11 @@ function getJsDependencies(fileContent) {
 			},
 		});
 	} catch (error) {
-		console.error(`Error parsing file content: ${error}`);
-		console.error(`File content: \n${fileContent}`);
+
+		const errorLogFolderPath = path.join(__dirname, "../error_log");
+		const errorLogFileContent = path.join(errorLogFolderPath, "error_log.yml");
+		fs.writeFileSync(errorLogFileContent, fileContent);
+
 	}
 
 	return dependencies;
