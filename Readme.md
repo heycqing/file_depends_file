@@ -29,6 +29,14 @@ Node 版本: v.16
 
 3. `node main.js` 
 
+
+
+
+## 使用文档(持续更新)
+
+[Link Text](./funcitonal.md)
+
+
 ## 输出 
 文件夹: `output/`
 1. `js_imports_output.yml` 主要输出依赖的js文件
