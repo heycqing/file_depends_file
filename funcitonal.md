@@ -122,8 +122,9 @@ node .\find-unused-vue-file\index.js D://code//base//src//kyetree//pages
 ```js
 {
   "paths": ["D://code//base//src//kyetree//pages"],
-   // 支持vue组件的组件命名常规写法
-  "componentName": 'bd-tree-select' / 'bdTreeSelect'
+   // vue组件的组件名, 首字母大写，驼峰写法，
+  //  转变之后会是：BdTreeSelect  >  bd-tree-select
+  "componentName":  'BdTreeSelect'
 }
 ```
 
