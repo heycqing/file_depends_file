@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "find": "node ./main.js"
+  },
   "devDependencies": {
     "@vue/compiler-sfc": "^3.3.4",
     "acorn": "^8.10.0",

@@ -1,5 +1,4 @@
 {
-  "paths": [
-   "D://code//base//src//kyetree-prism//pages//data-view"
-  ]
+  "paths": ["D://code//base//src//kyetree//pages"],
+  "serachComponentName": "BdTreeSelect"
 }
