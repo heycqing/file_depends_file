@@ -4,7 +4,7 @@
 ## 安装
 Node 版本: v.16 
 
-## 使用
+## 基本使用
 1. `npm i` 安装依赖
 
 2. 更改扫描路径: `config/config.js`
@@ -27,7 +27,7 @@ Node 版本: v.16
 
     具体路径文件集合在config中。
 
-3. `node main.js` 
+3. `node main.js`  或者 `npm run find`
 
 
 
